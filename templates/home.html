@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+
+    <style>
+        .post-container{
+            width: 50%;
+            border: 2px;
+            border-style: solid;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .post-container .counter, button{
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+    {% for post in posts %}
+    
+    <div class="post-container">
+        <h2 class="title">{{ post.title }}</h2>
+        <p class="caption"> {{post.caption }} </p>
+        <div class="like">
+            <p id="{{ post.pk }}" class="counter"> {{ post.likes.count }} </p>
+            <button onclick="likePost(this)" id="{{ post.pk }}" > {% if post in liked_posts %} Liked {% else %} Like {% endif %} </button> 
+
+        </div>
+    </div>
+
+    {% endfor %}
+    {% csrf_token %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
+    <script>
+        // Load a login template if user is not signed in
+        const likePost = function(button){
+            
+            post_id = $(button).attr('id');
+            $.ajax({
+                type:'POST',
+                url: '/post/like/',
+                data: {
+                'post_id': post_id,
+                'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+
+                success: function (response) {
+                    if(response.liked){
+                        $(button).html('Liked');
+                        current_likes = parseInt($('#' + post_id).html()) ;
+                        $('#' + post_id).html(current_likes + 1);
+                        
+                    }
+                    else{
+                        $(button).html('Like');
+                        current_likes = parseInt($('#' + post_id).html()) ;
+                        $('#' + post_id).html(current_likes - 1);
+                    };
+                },
+
+                error: () =>{
+                    console.log("sorry something went wrong"); // Use alert or notify user
+                }
+            })
+        };
+    </script>
+
+</body>
+</html>
